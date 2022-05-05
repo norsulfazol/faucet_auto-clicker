@@ -1,6 +1,6 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
-*.py[cod]
+*.py[od]
 *$py.class
 
 # C extensions
@@ -57,7 +57,7 @@ coverage.xml
 
 # Django stuff:
 *.log
-local_settings.py
+local_*.py
 db.sqlite3
 db.sqlite3-journal
 
@@ -127,3 +127,14 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# PyCharm
+.idea/
+.run/
+
+# app
+git_link.txt
+drivers/*driver
+core.py
+ec.py
+my_*.py
