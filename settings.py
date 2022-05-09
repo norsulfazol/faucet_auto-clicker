@@ -1,12 +1,11 @@
-from os import getenv, getpid
-from pathlib import Path
+import os
 from time import strftime
 
-BASE_DIR = Path(__file__).resolve().parent
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Browser & driver
 BROWSER_NAME = 'Firefox'  # Chrome, Firefox, Ie, Edge, Opera, Safari, etc.
-DRIVERS_DIR = BASE_DIR / 'drivers'
+DRIVERS_DIR = os.path.join(BASE_DIR, 'drivers')
 DRIVER_FILE = 'geckodriver'  # chromedriver, geckodriver, etc.
 
 # Authentication
@@ -16,15 +15,15 @@ DRIVER_FILE = 'geckodriver'  # chromedriver, geckodriver, etc.
 #   echo "export FBTC_TOTP_SECRET=<totp_secret>" >> ~/.bashrc
 #   source ~/.bashrc
 #   env | grep FBTC
-# Or specify values as the second parameter of the getenv() method.
-AUTH_ADDRESS = getenv('FBTC_ADDRESS', '')  # email or BTC (withdrawal) address
-AUTH_PASSWORD = getenv('FBTC_PASSWORD', '')
-AUTH_TOTP_SECRET = getenv('FBTC_TOTP_SECRET', '')  # if not using 2FA, the value should be empty
+# Or specify values as the second parameter of the os.getenv() method.
+AUTH_ADDRESS = os.getenv('FBTC_ADDRESS', '')  # email or BTC (withdrawal) address
+AUTH_PASSWORD = os.getenv('FBTC_PASSWORD', '')
+AUTH_TOTP_SECRET = os.getenv('FBTC_TOTP_SECRET', '')  # if not using 2FA, the value should be empty
 
 # Logging
-LOGS_DIR = BASE_DIR / 'logs'
+LOGS_DIR = os.path.join(BASE_DIR, 'logs')
 LOGS_PREFIX = ''  # for example: f'{strftime("%y%m%d")}_'
-LOGS_SUFFIX = ''  # for example: f'_{getpid()}'
+LOGS_SUFFIX = ''  # for example: f'_{os.getpid()}'
 FAUCET_LOG_LEVEL = 20  # 0|NOTSET - disable faucet logging, 10|DEBUG, 20|INFO, 30|WARNING, 40|ERROR, 50|CRITICAL
 FAUCET_LOG_TO_FILE = True  # set to False to log to standard output
 FAUCET_LOG_FILE_MODE = 'w'  # 'w' - overwrites an existing file, 'a' - adds to the end of the existing file

@@ -1,6 +1,5 @@
 #!/usr/bin/env python -B
-import sys
-import core
+import os, sys, core
 from time import sleep
 from itertools import count
 from logging import basicConfig, getLogger
@@ -8,21 +7,19 @@ from logging import basicConfig, getLogger
 # Import custom settings
 try:
     settings = __import__(sys.argv[1])
-    print(f'Current settings module "{sys.argv[1]}".')
-except IndexError:
+except (IndexError, ModuleNotFoundError, ImportError) as err:
     settings = __import__('settings')
-    print('Current settings module "settings".')
-except (ModuleNotFoundError, ImportError) as err:
-    settings = __import__('settings')
-    print({'ModuleNotFoundError': f'Module "{sys.argv[1]}" not found.\n',
-           'ImportError': f'Failed to import module "{sys.argv[1]}".\n'}[err.__class__.__name__],
-          'Current settings module "settings".', sep='')
+    if err.__class__.__name__ != 'IndexError':
+        print({'ModuleNotFoundError': f'Module "{sys.argv[1]}" not found.',
+               'ImportError': f'Failed to import module "{sys.argv[1]}".'}[err.__class__.__name__])
+print(f'Current settings module "{settings.__name__}".')
 
 # Logging initialization
 faucet_log_level = getattr(settings, "FAUCET_LOG_LEVEL", 20)
-basicConfig(**({'filename': getattr(settings, 'LOGS_DIR', '') / f'{getattr(settings, "LOGS_PREFIX", "")}'
-                                                                f'{getattr(settings, "FAUCET_LOG_FILE", "faucet.log")}'
-                                                                f'{getattr(settings, "LOGS_SUFFIX", "")}',
+basicConfig(**({'filename': os.path.join(getattr(settings, 'LOGS_DIR', ''),
+                                         f'{getattr(settings, "LOGS_PREFIX", "")}'
+                                         f'{getattr(settings, "FAUCET_LOG_FILE", "faucet.log")}'
+                                         f'{getattr(settings, "LOGS_SUFFIX", "")}'),
                 'filemode': getattr(settings, 'FAUCET_LOG_FILE_MODE', 'w')}
                if getattr(settings, 'FAUCET_LOG_TO_FILE', True) else {'stream': sys.stdout}),
             format=f'%(asctime)s{("", " [%(process)6d]")[faucet_log_level == 10]} %(levelname)-8s'
@@ -42,10 +39,12 @@ def scenario() -> int:
     """
     faucet = core.FreeBitcoinFaucet(
         browser_name=getattr(settings, 'BROWSER_NAME', 'Firefox'),
-        driver_exec_path=getattr(settings, 'DRIVERS_DIR', '') / getattr(settings, 'DRIVER_FILE', 'geckodriver'),
-        driver_log_path=getattr(settings, 'LOGS_DIR', '') / f'{getattr(settings, "LOGS_PREFIX", "")}'
-                                                            f'{getattr(settings, "DRIVER_LOG_FILE", "driver.log")}'
-                                                            f'{getattr(settings, "LOGS_SUFFIX", "")}',
+        driver_exec_path=os.path.join(getattr(settings, 'DRIVERS_DIR', ''),
+                                      getattr(settings, 'DRIVER_FILE', 'geckodriver')),
+        driver_log_path=os.path.join(getattr(settings, 'LOGS_DIR', ''),
+                                     f'{getattr(settings, "LOGS_PREFIX", "")}'
+                                     f'{getattr(settings, "DRIVER_LOG_FILE", "driver.log")}'
+                                     f'{getattr(settings, "LOGS_SUFFIX", "")}'),
         timeout_page_load=getattr(settings, 'TIMEOUT_PAGE_LOAD', 30),
         timeout_elem_wait=getattr(settings, 'TIMEOUT_ELEM_WAIT', 10),
         check_for_captcha=getattr(settings, 'CHECK_FOR_CAPTCHA', True))
