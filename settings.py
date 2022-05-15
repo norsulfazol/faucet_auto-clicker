@@ -1,5 +1,6 @@
 import os
-from time import strftime
+
+# from time import strftime
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -33,6 +34,10 @@ DRIVER_LOG_FILE = 'driver.log'
 # Scenario
 TIMEOUT_PAGE_LOAD = 30
 TIMEOUT_ELEM_WAIT = 10
+
+ON_UNAVAILABLE_ATTEMPTS = 5  # 0 - infinitely (not recommended)
+ON_UNAVAILABLE_ATTEMPTS_TIMEOUT = 60 * 5  # in seconds
+ON_UNAVAILABLE_ATTEMPTS_TIMEOUT_INCREASE = 2
 
 CLOSE_COOKIE_WARNING_BANNER = True
 CLOSE_NOTIFICATION_MODAL = True

@@ -19,7 +19,7 @@ operating systems, Python will have to be installed independently.
 ### Python installation for MS Windows OS:
 Download the Python installer for Windows from the
 [official Python website](https://www.python.org/downloads/windows/ "Download page Python for MS Windows") and start the
-installation by running the exe file (for example, _**python-3.6.8.exe**_ or _**python-3.6.8-amd64.exe**_). During the
+installation by running the exe-file (for example, _**python-3.6.8.exe**_ or _**python-3.6.8-amd64.exe**_). During the
 installation process, confirm the installation of the **pip** package manager, standard packages, and also pay attention
 to the correctness of adding Python paths to environment variables. It is recommended to install Python to the root of
 the _**C**_ drive (you should get something like _**C:\Python36**_). A more detailed description of the installation
@@ -113,12 +113,13 @@ Following are the possible options for running the program from the terminal. Co
 brackets (`[<directive>]`) are optional.
 
 ### Launching the program from any folder:
-`[[<full path to python interpreter>/]python[.exe]] <full path to the program folder>/faucet_auto-clicker/main.py
-[<custom settings file name>]`
+
+    [[<full path to python interpreter>/]python[.exe]] <full path to the program folder>/faucet_auto-clicker/main.py [<custom settings file name>]
 
 If the first line of the file _**main.py**_ is a shebang-string with the path to the Python interpreter,
 then the directive _**python**_ on the command line can be omitted. If the custom settings file name is not specified or
 is erroneous, then the _**settings.py**_ file will be used.
 
 ### Launching the program from the program folder:
-`python[.exe] -m main [<custom settings file name>]`
+
+    python[.exe] -m main [<custom settings file name>]

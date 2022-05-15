@@ -35,27 +35,60 @@ def scenario() -> int:
     """
     Scenario.
 
-    :return: int - error code
+    :return: int - exit status
     """
-    faucet = core.FreeBitcoinFaucet(
-        browser_name=getattr(settings, 'BROWSER_NAME', 'Firefox'),
-        driver_exec_path=os.path.join(getattr(settings, 'DRIVERS_DIR', ''),
-                                      getattr(settings, 'DRIVER_FILE', 'geckodriver')),
-        driver_log_path=os.path.join(getattr(settings, 'LOGS_DIR', ''),
-                                     f'{getattr(settings, "LOGS_PREFIX", "")}'
-                                     f'{getattr(settings, "DRIVER_LOG_FILE", "driver.log")}'
-                                     f'{getattr(settings, "LOGS_SUFFIX", "")}'),
-        timeout_page_load=getattr(settings, 'TIMEOUT_PAGE_LOAD', 30),
-        timeout_elem_wait=getattr(settings, 'TIMEOUT_ELEM_WAIT', 10),
-        check_for_captcha=getattr(settings, 'CHECK_FOR_CAPTCHA', True))
+
+    def is_refreshed() -> bool:
+        timeout = getattr(settings, 'ON_UNAVAILABLE_ATTEMPTS_TIMEOUT', 60 * 5)
+        for att in count(1):
+            if on_unavailable_attempts != 1:
+                logger.info('Refresh attempt: %s/%s', att,
+                            (on_unavailable_attempts, 'infinity')[on_unavailable_attempts == 0])
+            if faucet.refresh() and faucet.is_available():
+                return True
+            if att == on_unavailable_attempts:
+                return False
+            logger.info('Timeout for next refresh attempt (sec): %s => %sh %sm %ss', timeout,
+                        *divmod(timeout // 60, 60), timeout % 60)
+            sleep(timeout)
+            timeout *= on_unavailable_attempts_timeout_increase
+
+    faucet = core.FreeBitcoinFaucet(browser_name=getattr(settings, 'BROWSER_NAME', 'Firefox'),
+                                    driver_exec_path=os.path.join(getattr(settings, 'DRIVERS_DIR', ''),
+                                                                  getattr(settings, 'DRIVER_FILE', 'geckodriver')),
+                                    driver_log_path=os.path.join(getattr(settings, 'LOGS_DIR', ''),
+                                                                 f'{getattr(settings, "LOGS_PREFIX", "")}'
+                                                                 f'{getattr(settings, "DRIVER_LOG_FILE", "driver.log")}'
+                                                                 f'{getattr(settings, "LOGS_SUFFIX", "")}'),
+                                    timeout_page_load=getattr(settings, 'TIMEOUT_PAGE_LOAD', 30),
+                                    timeout_elem_wait=getattr(settings, 'TIMEOUT_ELEM_WAIT', 10),
+                                    check_for_captcha=getattr(settings, 'CHECK_FOR_CAPTCHA', True))
     if not faucet:
         return 1
-    logger.info('Browser: %s', faucet.browser_name)
-    logger.info('Current URL: %s', faucet.current_url)
     logger.info('Faucet: %s', faucet)
-    logger.info('Faucet title: %s', faucet.title)
+    logger.info('Browser: %s (v.%s)', faucet.browser_name, faucet.browser_version)
     logger.info('Page load timeout (sec): %s', faucet.timeout_page_load)
     logger.info('Element(s) wait timeout (sec): %s', faucet.timeout_elem_wait)
+    #
+    on_unavailable_attempts = getattr(settings, 'ON_UNAVAILABLE_ATTEMPTS', 1)
+    on_unavailable_attempts_timeout = getattr(settings, 'ON_UNAVAILABLE_ATTEMPTS_TIMEOUT', 60 * 5)
+    on_unavailable_attempts_timeout_increase = getattr(settings, 'ON_UNAVAILABLE_ATTEMPTS_TIMEOUT_INCREASE', 1)
+    for attempt in count(1):
+        if on_unavailable_attempts != 1:
+            logger.info('Open site attempt: %s/%s', attempt,
+                        (on_unavailable_attempts, 'infinity')[on_unavailable_attempts == 0])
+        if faucet.open() and faucet.is_available():
+            break
+        if attempt == on_unavailable_attempts:
+            faucet.quit()
+            return 1
+        logger.info('Timeout for next open site attempt (sec): %s => %sh %sm %ss', on_unavailable_attempts_timeout,
+                    *divmod(on_unavailable_attempts_timeout // 60, 60), on_unavailable_attempts_timeout % 60)
+        sleep(on_unavailable_attempts_timeout)
+        on_unavailable_attempts_timeout *= on_unavailable_attempts_timeout_increase
+    logger.info('Current URL: %s', faucet.current_url)
+    logger.info('Site page title: %s', faucet.title)
+    #
     if getattr(settings, 'CLOSE_COOKIE_WARNING_BANNER', True):
         faucet.close_cookie_warning_banner()
     if getattr(settings, 'CLOSE_NOTIFICATION_MODAL', True):
@@ -67,20 +100,20 @@ def scenario() -> int:
         return 1
     if getattr(settings, 'CLOSE_NOTIFICATION_MODAL', True):
         faucet.close_notification_modal()
-
+    #
     logger.debug('User ID: %s', faucet.user_id)
     logger.debug('Email address: %s', faucet.email_address)
     if faucet.recovery_phone_number != '+0':
         logger.debug('Recovery phone number: %s', faucet.recovery_phone_number)
     if faucet.btc_address:
         logger.debug('BTC (withdrawal) address: %s', faucet.btc_address)
-
+    #
     faucet.state_sound_free_play = getattr(settings, 'SOUND_FREE_PLAY', False)
     faucet.state_disable_lottery = getattr(settings, 'DISABLE_LOTTERY', False)
     faucet.state_disable_interest = getattr(settings, 'DISABLE_INTEREST', False)
     logger.info('Starting balance: BTC: %.8f | Reward points: %s | Lottery tickets: %s',
                 faucet.balance_btc, faucet.balance_rp, faucet.balance_lt)
-
+    #
     free_play_num = getattr(settings, 'FREE_PLAY_NUM', 0)
     free_play_attempts = getattr(settings, 'FREE_PLAY_ATTEMPTS', 1)
     for num in count(1):
@@ -91,14 +124,15 @@ def scenario() -> int:
             if free_play_attempts != 1:
                 logger.info('Free play attempt: %s/%s', attempt,
                             (free_play_attempts, 'infinity')[free_play_attempts == 0])
-            if attempt > 1:
-                faucet.refresh()
+            if attempt > 1 and not is_refreshed():
+                break
             delay = faucet.countdown_free_play
             if delay:
                 logger.info('Free play countdown (sec): %s => %sm %ss', delay, *divmod(delay, 60))
                 sleep(delay + getattr(settings, 'FREE_PLAY_AFTER_COUNTDOWN_DELAY', 0))
-                if getattr(settings, 'FREE_PLAY_AFTER_COUNTDOWN_REFRESH', False):
-                    faucet.refresh()
+                if (getattr(settings, 'FREE_PLAY_AFTER_COUNTDOWN_REFRESH',
+                            False) or not faucet.is_available()) and not is_refreshed():
+                    break
             if faucet.is_ready_free_play():
                 if faucet.load_bonus_table():
                     logger.debug('Available bonuses free BTC (%%/RP): %s',
@@ -131,10 +165,17 @@ def scenario() -> int:
             faucet.close_after_free_play_modal()
         if num == free_play_num:
             break
-    is_auth = not faucet.sign_out()
+    is_authenticated = not faucet.sign_out()
     faucet.quit()
-    return int(is_auth)
+    return int(is_authenticated)
+
+
+def main():
+    exit_status = scenario()
+    print('\nExit status:', ('ERROR', 'OK')[exit_status == 0])
+    input('\nPress <Enter> key to complete the program ...')
+    sys.exit(exit_status)
 
 
 if __name__ == '__main__':
-    sys.exit(scenario())
+    main()
