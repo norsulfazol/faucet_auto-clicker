@@ -7,7 +7,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # Browser & driver
 BROWSER_NAME = 'Firefox'  # Chrome, Firefox, Ie, Edge, Opera, Safari, etc.
 DRIVERS_DIR = os.path.join(BASE_DIR, 'drivers')
-DRIVER_FILE = 'geckodriver'  # chromedriver, geckodriver, etc.
+DRIVER_FILE = 'geckodriver'  # chromedriver[.exe], geckodriver[.exe], etc.
 
 # Authentication
 # On Linux add enviropment variables for current user only:
@@ -34,6 +34,8 @@ DRIVER_LOG_FILE = 'driver.log'
 # Scenario
 TIMEOUT_PAGE_LOAD = 30
 TIMEOUT_ELEM_WAIT = 10
+
+QUICK_START = False
 
 ON_UNAVAILABLE_ATTEMPTS = 5  # 0 - infinitely (not recommended)
 ON_UNAVAILABLE_ATTEMPTS_TIMEOUT = 60 * 5  # in seconds

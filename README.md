@@ -81,7 +81,7 @@ no need to change them. Before running the program, you only need to set/change 
     AUTH_TOTP_SECRET = '<secret key that is used to generate the Time-based One-Time Password,- only if 2FA is enabled on your account>'
 
 >**ATTENTION:** It is safer to store account authentication data not in the _**settings.py**_ file, but in
-> environment variables. To do this, the following environment variable names are proposed in the program
+> environment variables for the current user only. To do this, the following environment variable names are proposed in the program
 > (respectively):
 > 
 >     FBTC_ADDRESS <= AUTH_ADDRESS
@@ -104,6 +104,8 @@ _**settings.py**_ file and set/change them.
     DRIVER_FILE = 'chromedriver.exe'
     ...
     FAUCET_LOG_TO_FILE = False
+    ...
+    QUICK_START = True
     ...
     DISABLE_LOTTERY = False
     ...

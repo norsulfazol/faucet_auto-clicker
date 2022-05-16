@@ -53,6 +53,7 @@ def scenario() -> int:
             sleep(timeout)
             timeout *= on_unavailable_attempts_timeout_increase
 
+    quick_start = getattr(settings, 'QUICK_START', True)
     faucet = core.FreeBitcoinFaucet(browser_name=getattr(settings, 'BROWSER_NAME', 'Firefox'),
                                     driver_exec_path=os.path.join(getattr(settings, 'DRIVERS_DIR', ''),
                                                                   getattr(settings, 'DRIVER_FILE', 'geckodriver')),
@@ -62,42 +63,54 @@ def scenario() -> int:
                                                                  f'{getattr(settings, "LOGS_SUFFIX", "")}'),
                                     timeout_page_load=getattr(settings, 'TIMEOUT_PAGE_LOAD', 30),
                                     timeout_elem_wait=getattr(settings, 'TIMEOUT_ELEM_WAIT', 10),
-                                    check_for_captcha=getattr(settings, 'CHECK_FOR_CAPTCHA', True))
+                                    check_for_captcha=getattr(settings, 'CHECK_FOR_CAPTCHA', True),
+                                    **({'open': True, 'sign_in': True,
+                                        'sign_in_address': getattr(settings, 'AUTH_ADDRESS', ''),
+                                        'sign_in_password': getattr(settings, 'AUTH_PASSWORD', ''),
+                                        'sign_in_totp_secret': getattr(settings, 'AUTH_TOTP_SECRET', '')}
+                                       if quick_start else {}))
     if not faucet:
         return 1
-    logger.info('Faucet: %s', faucet)
-    logger.info('Browser: %s (v.%s)', faucet.browser_name, faucet.browser_version)
-    logger.info('Page load timeout (sec): %s', faucet.timeout_page_load)
-    logger.info('Element(s) wait timeout (sec): %s', faucet.timeout_elem_wait)
-    #
     on_unavailable_attempts = getattr(settings, 'ON_UNAVAILABLE_ATTEMPTS', 1)
-    on_unavailable_attempts_timeout = getattr(settings, 'ON_UNAVAILABLE_ATTEMPTS_TIMEOUT', 60 * 5)
     on_unavailable_attempts_timeout_increase = getattr(settings, 'ON_UNAVAILABLE_ATTEMPTS_TIMEOUT_INCREASE', 1)
-    for attempt in count(1):
-        if on_unavailable_attempts != 1:
-            logger.info('Open site attempt: %s/%s', attempt,
-                        (on_unavailable_attempts, 'infinity')[on_unavailable_attempts == 0])
-        if faucet.open() and faucet.is_available():
-            break
-        if attempt == on_unavailable_attempts:
+    if quick_start:
+        if not faucet.is_available() or not faucet.is_authenticated():
             faucet.quit()
             return 1
-        logger.info('Timeout for next open site attempt (sec): %s => %sh %sm %ss', on_unavailable_attempts_timeout,
-                    *divmod(on_unavailable_attempts_timeout // 60, 60), on_unavailable_attempts_timeout % 60)
-        sleep(on_unavailable_attempts_timeout)
-        on_unavailable_attempts_timeout *= on_unavailable_attempts_timeout_increase
-    logger.info('Current URL: %s', faucet.current_url)
-    logger.info('Site page title: %s', faucet.title)
-    #
-    if getattr(settings, 'CLOSE_COOKIE_WARNING_BANNER', True):
-        faucet.close_cookie_warning_banner()
-    if getattr(settings, 'CLOSE_NOTIFICATION_MODAL', True):
-        faucet.close_notification_modal()
-    if not faucet.sign_in(getattr(settings, 'AUTH_ADDRESS', ''),
-                          getattr(settings, 'AUTH_PASSWORD', ''),
-                          getattr(settings, 'AUTH_TOTP_SECRET', '')):
-        faucet.quit()
-        return 1
+        if getattr(settings, 'CLOSE_COOKIE_WARNING_BANNER', True):
+            faucet.close_cookie_warning_banner()
+    else:
+        logger.info('Faucet: %s', faucet)
+        logger.info('Browser: %s (v.%s)', faucet.browser_name, faucet.browser_version)
+        logger.info('Page load timeout (sec): %s', faucet.timeout_page_load)
+        logger.info('Element(s) wait timeout (sec): %s', faucet.timeout_elem_wait)
+        #
+        on_unavailable_attempts_timeout = getattr(settings, 'ON_UNAVAILABLE_ATTEMPTS_TIMEOUT', 60 * 5)
+        for attempt in count(1):
+            if on_unavailable_attempts != 1:
+                logger.info('Open site attempt: %s/%s', attempt,
+                            (on_unavailable_attempts, 'infinity')[on_unavailable_attempts == 0])
+            if faucet.open() and faucet.is_available():
+                break
+            if attempt == on_unavailable_attempts:
+                faucet.quit()
+                return 1
+            logger.info('Timeout for next open site attempt (sec): %s => %sh %sm %ss', on_unavailable_attempts_timeout,
+                        *divmod(on_unavailable_attempts_timeout // 60, 60), on_unavailable_attempts_timeout % 60)
+            sleep(on_unavailable_attempts_timeout)
+            on_unavailable_attempts_timeout *= on_unavailable_attempts_timeout_increase
+        logger.info('Current URL: %s', faucet.current_url)
+        logger.info('Site page title: %s', faucet.title)
+        #
+        if getattr(settings, 'CLOSE_COOKIE_WARNING_BANNER', True):
+            faucet.close_cookie_warning_banner()
+        if getattr(settings, 'CLOSE_NOTIFICATION_MODAL', True):
+            faucet.close_notification_modal()
+        if not faucet.sign_in(getattr(settings, 'AUTH_ADDRESS', ''),
+                              getattr(settings, 'AUTH_PASSWORD', ''),
+                              getattr(settings, 'AUTH_TOTP_SECRET', '')):
+            faucet.quit()
+            return 1
     if getattr(settings, 'CLOSE_NOTIFICATION_MODAL', True):
         faucet.close_notification_modal()
     #
