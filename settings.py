@@ -45,7 +45,7 @@ CLOSE_COOKIE_WARNING_BANNER = True
 CLOSE_NOTIFICATION_MODAL = True
 CLOSE_AFTER_FREE_PLAY_MODAL = True  # after a free play, a modal window usually pops up
 
-SOUND_FREE_PLAY = False
+FREE_PLAY_SOUND = False
 DISABLE_LOTTERY = True
 DISABLE_INTEREST = False
 

@@ -84,6 +84,7 @@ def scenario() -> int:
         logger.info('Browser: %s (v.%s)', faucet.browser_name, faucet.browser_version)
         logger.info('Page load timeout (sec): %s', faucet.timeout_page_load)
         logger.info('Element(s) wait timeout (sec): %s', faucet.timeout_elem_wait)
+        logger.info('Captcha check status: %s', faucet.check_for_captcha)
         #
         on_unavailable_attempts_timeout = getattr(settings, 'ON_UNAVAILABLE_ATTEMPTS_TIMEOUT', 60 * 5)
         for attempt in count(1):
@@ -121,7 +122,7 @@ def scenario() -> int:
     if faucet.btc_address:
         logger.debug('BTC (withdrawal) address: %s', faucet.btc_address)
     #
-    faucet.state_sound_free_play = getattr(settings, 'SOUND_FREE_PLAY', False)
+    faucet.state_free_play_sound = getattr(settings, 'FREE_PLAY_SOUND', False)
     faucet.state_disable_lottery = getattr(settings, 'DISABLE_LOTTERY', False)
     faucet.state_disable_interest = getattr(settings, 'DISABLE_INTEREST', False)
     logger.info('Starting balance: BTC: %.8f | Reward points: %s | Lottery tickets: %s',
@@ -139,7 +140,7 @@ def scenario() -> int:
                             (free_play_attempts, 'infinity')[free_play_attempts == 0])
             if attempt > 1 and not is_refreshed():
                 break
-            delay = faucet.countdown_free_play
+            delay = faucet.free_play_countdown
             if delay:
                 logger.info('Free play countdown (sec): %s => %sm %ss', delay, *divmod(delay, 60))
                 sleep(delay + getattr(settings, 'FREE_PLAY_AFTER_COUNTDOWN_DELAY', 0))
@@ -176,6 +177,7 @@ def scenario() -> int:
                     faucet.balance_btc, faucet.balance_rp, faucet.balance_lt)
         if getattr(settings, 'CLOSE_AFTER_FREE_PLAY_MODAL', True):
             faucet.close_after_free_play_modal()
+        faucet.play_free_play_sound()
         if num == free_play_num:
             break
     is_authenticated = not faucet.sign_out()
