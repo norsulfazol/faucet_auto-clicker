@@ -2,6 +2,8 @@
 
 Program for managing one of the oldest bitcoin faucets.
 
+_Not registered yet? Here is the [registration link](https://clck.ru/hqTDa "Registering on a bitcoin faucet")._
+
 ### Currently, he is able to:
 * authenticate a user;
 * play a free game;
@@ -59,22 +61,27 @@ the future. For now, let's install the packages in the global environment:
 `pip install -r requirements.txt`
 
 ### Viewing the list of installed additional Python packages in the current environment:
-`pip freeze`
+`pip freeze` or `pip list`
 
 ### Browser driver installation:
 Before starting work, you must select which browser the program will work with. It is recommended to update the selected
-browser to the latest possible version. Determine the version and bitness of the selected browser. Download the
+browser to the latest possible version. For some browsers (now it's Mozilla Firefox and Google Chrome) there is no need
+to select and install the appropriate driver manually - the program will automatically do it for you when you start it.
+Before manually installing the driver, determine the version and bitness of the selected browser. Download the
 appropriate browser driver (links to driver distributions for some browsers in the
-_**faucet_auto-clicker/drivers/readme.txt**_ file). If you cannot find a driver that is the same version as your
-browser, you can try using the next older version of the driver. Extract the driver from the archive (if it is in the
-archive) and save it to the _**faucet_auto-clicker/drivers**_ folder.
+_**faucet_auto-clicker/drivers/readme.txt**_ file). If you cannot find a driver of the same version as your browser,
+you can try using the nearest older version first, and then, conversely, the nearest newer version of the driver. For
+browsers whose version is not associated with any of the possible driver versions (for example, Mozilla Firefox), you
+can start trying with the most recent driver version, gradually downgrading the version until you get the best result.
+Extract the driver from the archive (if it is in the archive) and save it to the _**faucet_auto-clicker/drivers**_
+folder. In some cases (on Unix-like operating systems), the driver file will need to be additionally assigned execution
+rights.
 
 ## Program settings:
 The program settings are located in the _**settings.py**_ file. For the most part, the settings are optimal and there is
 no need to change them. Before running the program, you only need to set/change the following few settings:
 
-    BROWSER_NAME = '<name of the selected browser (default is 'Firefox')>'
-    DRIVER_FILE = '<file name (with extension, if any) of the selected browser driver (default is 'geckodriver')>'
+    BROWSER = '<name of the selected browser (default is 'firefox')>'
     
     AUTH_ADDRESS = '<account email or BTC (withdrawal) address>'
     AUTH_PASSWORD = '<account password>'
@@ -91,6 +98,9 @@ no need to change them. Before running the program, you only need to set/change 
 > saving account authentication data in environment variables, there is no need to save them in the corresponding
 > variables of the _**settings.py**_ file.
 
+>**WARNING:** I would like to pay special attention to the settings of browser options (such as FIREFOX_BROWSER_OPTIONS
+> and CHROME_BROWSER_OPTIONS). Careless manipulation of some options can lead to blocking (and loss) of your account.
+
 ### Custom settings file:
 Instead of adjusting the main program settings file, you can create your own personal file in the program folder (for
 example, with the name _**my_settings.py**_), into which it is enough to copy only the necessary settings from the
@@ -100,8 +110,7 @@ _**settings.py**_ file and set/change them.
 
     from settings import *
 
-    BROWSER_NAME = 'Chrome'
-    DRIVER_FILE = 'chromedriver.exe'
+    BROWSER = 'chrome'
     ...
     FAUCET_LOG_TO_FILE = False
     ...

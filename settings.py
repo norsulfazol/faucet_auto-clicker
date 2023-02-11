@@ -4,10 +4,57 @@ import os
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Browser & driver
-BROWSER_NAME = 'Firefox'  # Chrome, Firefox, Ie, Edge, Opera, Safari, etc.
+# Browser & shared driver directory
+BROWSER = 'firefox'  # firefox, chrome, edge, ie, opera, safari, etc.
 DRIVERS_DIR = os.path.join(BASE_DIR, 'drivers')
-DRIVER_FILE = 'geckodriver'  # chromedriver[.exe], geckodriver[.exe], etc.
+
+# Mozilla Firefox
+FIREFOX_BROWSER_FILE = 'firefox'  # empty or omitted value - BROWSER variable is used
+FIREFOX_BROWSER_DIR = ''  # empty or omitted value - search for the browser file through the PATH env variable
+FIREFOX_BROWSER_REG_KEY = ''  # for Windows platform only
+# The user-agent string on the client side (that is, sent by your browser) can be obtained in the browser using
+# JavaScript (navigator.userAgent property) or using a special web service (for example, https://2ip.ru/browser-info/ ).
+FIREFOX_BROWSER_OPTIONS = {
+    'capabilities': {},  # (dictionary) only for Firefox, Chrome, IE
+    'preferences': {'general.useragent.override': 'Mozilla/5.0 (Linux; Android 8.1.0; Redmi 6A; rv:109.0) '
+                                                  'Gecko/20100101 Firefox/109.0 Mobile Safari/537.36',
+                    'browser.privatebrowsing.autostart': True},  # (dictionary) only for Firefox
+    'experimentals': {},  # (dictionary) only for Chrome
+    'arguments': ()}  # (list, tuple, set) only for Firefox, Chrome, IE
+
+FIREFOX_DRIVER_FILE = 'geckodriver'  # empty or omitted value - BROWSER variable is used
+FIREFOX_DRIVER_DIR = DRIVERS_DIR  # empty or omitted value - search for the driver file through the PATH env variable
+FIREFOX_DRIVER_URL = 'https://github.com/mozilla/geckodriver/releases'
+
+# Google Chrome (Chromium)
+CHROME_BROWSER_FILE = 'google-chrome'  # here, examples: 'google-chrome-stable', 'google-chrome', 'chrome', ...
+CHROME_BROWSER_DIR = ''  # here, examples: '/usr/bin', 'c:/Program Files/Google/Chrome/Application', ...
+CHROME_BROWSER_REG_KEY = 'HKCU\\SOFTWARE\\Google\\Chrome\\BLBeacon'
+CHROME_BROWSER_OPTIONS = {'experimentals': {'excludeSwitches': ['enable-logging', 'enable-automation'],
+                                            'useAutomationExtension': False},
+                          'arguments': ('--user-agent=Mozilla/5.0 (Linux; Android 8.1.0; Redmi 6A) '
+                                        'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Mobile Safari/537.36',
+                                        '--no-default-browser-check',
+                                        '--no-first-run',
+                                        '--incognito',
+                                        # '--headless',
+                                        # '--no-sandbox',
+                                        # '--disable-gpu',
+                                        # '--disable-blink-features=AutomationControlled',
+                                        'mobileEmulation')}
+
+CHROME_DRIVER_FILE = 'chromedriver'
+CHROME_DRIVER_DIR = DRIVERS_DIR
+CHROME_DRIVER_URL = 'https://chromedriver.storage.googleapis.com'
+
+# MS Edge
+EDGE_BROWSER_FILE = 'edge'
+EDGE_BROWSER_DIR = ''
+EDGE_BROWSER_REG_KEY = ''
+
+EDGE_DRIVER_FILE = 'msedgedriver'
+EDGE_DRIVER_DIR = DRIVERS_DIR
+EDGE_DRIVER_URL = 'https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/'
 
 # Authentication
 # On Linux add enviropment variables for current user only:
@@ -62,5 +109,5 @@ FREE_PLAY_AFTER_COUNTDOWN_REFRESH = False  # after the countdown ends, the page 
 # If the bonus is not in the dictionary, then it will never be activated.
 # If the dictionary is empty, then none of the bonuses will ever activate.
 # BONUSES = {'btc': 50 | 100 | 500 | 1000, 'lt': 1 | 10 | 25 | 50 | 100, 'wof': 1 | 2 | 3 | 4 | 5}
-BONUSES = {'btc': 1000, 'wof': 5}
+BONUSES = {'btc': 500, 'wof': 5}
 BONUSES_TIMEOUT_ELEM_WAIT = TIMEOUT_ELEM_WAIT / 2

@@ -1,5 +1,7 @@
-#!/usr/bin/env python -B
-import os, sys, core
+#!/usr/bin/env python3 -B
+import os
+import sys
+import core
 from time import sleep
 from itertools import count
 from logging import basicConfig, getLogger
@@ -15,6 +17,8 @@ except (IndexError, ModuleNotFoundError, ImportError) as err:
 print(f'Current settings module "{settings.__name__}".')
 
 # Logging initialization
+if getattr(settings, 'LOGS_DIR', '') and not os.path.exists(settings.LOGS_DIR):
+    os.mkdir(settings.LOGS_DIR)
 faucet_log_level = getattr(settings, "FAUCET_LOG_LEVEL", 20)
 basicConfig(**({'filename': os.path.join(getattr(settings, 'LOGS_DIR', ''),
                                          f'{getattr(settings, "LOGS_PREFIX", "")}'
@@ -53,14 +57,34 @@ def scenario() -> int:
             sleep(timeout)
             timeout *= on_unavailable_attempts_timeout_increase
 
+    browser = getattr(settings, 'BROWSER', 'firefox')
+    browser_file = core.BrowserExecFileOrLink(getattr(settings, f'{browser.upper()}_BROWSER_FILE', browser).strip(),
+                                              directory=getattr(settings, f'{browser.upper()}_BROWSER_DIR', '').strip(),
+                                              reg_key=getattr(settings,
+                                                              f'{browser.upper()}_BROWSER_REG_KEY', '').strip())
+    if not browser_file:
+        return 1
+    print(browser_file)
+    driver_file = getattr(core, f'{browser.capitalize()}DriverExecFileOrLink', None)
+    if not driver_file:
+        return 1
+    driver_file = driver_file(getattr(settings, f'{browser.upper()}_DRIVER_FILE', browser).strip(),
+                              directory=getattr(settings, f'{browser.upper()}_DRIVER_DIR', '').strip())
+    if not driver_file:
+        return 1
+    print(driver_file)
+    if not driver_file.update(getattr(settings, f'{browser.upper()}_DRIVER_URL', '').strip(),
+                              browser_version_info=browser_file.version_info):
+        return 1
+    #
     quick_start = getattr(settings, 'QUICK_START', True)
-    faucet = core.FreeBitcoinFaucet(browser_name=getattr(settings, 'BROWSER_NAME', 'Firefox'),
-                                    driver_exec_path=os.path.join(getattr(settings, 'DRIVERS_DIR', ''),
-                                                                  getattr(settings, 'DRIVER_FILE', 'geckodriver')),
+    faucet = core.FreeBitcoinFaucet(browser_name=browser,
+                                    driver_exec_path=driver_file.path,
                                     driver_log_path=os.path.join(getattr(settings, 'LOGS_DIR', ''),
                                                                  f'{getattr(settings, "LOGS_PREFIX", "")}'
                                                                  f'{getattr(settings, "DRIVER_LOG_FILE", "driver.log")}'
                                                                  f'{getattr(settings, "LOGS_SUFFIX", "")}'),
+                                    driver_options=getattr(settings, f'{browser.upper()}_BROWSER_OPTIONS', {}),
                                     timeout_page_load=getattr(settings, 'TIMEOUT_PAGE_LOAD', 30),
                                     timeout_elem_wait=getattr(settings, 'TIMEOUT_ELEM_WAIT', 10),
                                     check_for_captcha=getattr(settings, 'CHECK_FOR_CAPTCHA', True),
