@@ -82,6 +82,9 @@ The program settings are located in the _**settings.py**_ file. For the most par
 no need to change them. Before running the program, you only need to set/change the following few settings:
 
     BROWSER = '<name of the selected browser (default is 'firefox')>'
+
+    FIREFOX_BROWSER_FILE = '<browser filename (default is 'firefox'; filename may be different in different OS)>'
+    CHROME_BROWSER_FILE = '<browser filename (default is 'google-chrome'; filename may be different in different OS)>'
     
     AUTH_ADDRESS = '<account email or BTC (withdrawal) address>'
     AUTH_PASSWORD = '<account password>'
@@ -111,13 +114,14 @@ _**settings.py**_ file and set/change them.
     from settings import *
 
     BROWSER = 'chrome'
-    ...
+
+    CHROME_BROWSER_FILE = ''
+
     FAUCET_LOG_TO_FILE = False
-    ...
+
     QUICK_START = True
-    ...
+
     FREE_PLAY_SOUND = True
-    ...
 
 ## Program launch:
 Following are the possible options for running the program from the terminal. Command line directives enclosed in square

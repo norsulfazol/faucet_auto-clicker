@@ -1,5 +1,5 @@
 __author__ = 'norsulfazol'
-__version__ = '1.3.0'
+__version__ = '1.3.1'
 
 import os
 import sys
@@ -360,10 +360,12 @@ class FirefoxDriverExecFileOrLink(DriverExecFileOrLink):
             logger.info('%snot needed.', self._upd_log_msg)
             return True
         if not unpack_archive(
-                download_file('{}/{}-v{}-{}{}.{}'.format(response.geturl().replace('/tag/', '/download/'), self.name,
-                                                         ver, ('', 'linux')[sys.platform.startswith('linux')] or
-                                                              ('', 'win')[sys.platform.startswith('win32')] or
-                                                              ('', 'macos')[sys.platform.startswith('darwin')],
+                download_file('{}/{}-v{}-{}{}.{}'.format(response.geturl().replace('/tag/', '/download/'),
+                                                         self.name.rstrip('ex')[:-1] if self.name.endswith(
+                                                             '.exe') else self.name, ver,
+                                                         ('', 'linux')[sys.platform.startswith('linux')] or
+                                                         ('', 'win')[sys.platform.startswith('win32')] or
+                                                         ('', 'macos')[sys.platform.startswith('darwin')],
                                                          (('32', '64')[sys.maxsize == 2 ** 63 - 1], '')[
                                                              sys.platform.startswith('darwin')],
                                                          ('tar.gz', 'zip')[sys.platform.startswith('win32')]),
@@ -401,7 +403,9 @@ class ChromeDriverExecFileOrLink(DriverExecFileOrLink):
             logger.info('%snot needed.', self._upd_log_msg)
             return True
         if not unpack_archive(
-                download_file('{}/{}/{}_{}.zip'.format(url.rstrip('/'), ver, self.name,
+                download_file('{}/{}/{}_{}.zip'.format(url.rstrip('/'), ver,
+                                                       self.name.rstrip('ex')[:-1] if self.name.endswith(
+                                                           '.exe') else self.name,
                                                        ('', 'linux64')[sys.platform.startswith('linux')] or
                                                        ('', 'win32')[sys.platform.startswith('win32')] or
                                                        ('', 'mac64')[sys.platform.startswith('darwin')]),
