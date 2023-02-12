@@ -57,19 +57,22 @@ def scenario() -> int:
             sleep(timeout)
             timeout *= on_unavailable_attempts_timeout_increase
 
-    browser = getattr(settings, 'BROWSER', 'firefox')
-    browser_file = core.BrowserExecFileOrLink(getattr(settings, f'{browser.upper()}_BROWSER_FILE', browser).strip(),
+    browser = getattr(settings, 'BROWSER', 'firefox').strip()
+    browser_file = getattr(settings, f'{browser.upper()}_BROWSER_FILE', browser).strip()
+    browser_file = core.BrowserExecFileOrLink(browser_file if browser_file else browser,
                                               directory=getattr(settings, f'{browser.upper()}_BROWSER_DIR', '').strip(),
                                               reg_key=getattr(settings,
                                                               f'{browser.upper()}_BROWSER_REG_KEY', '').strip())
     if not browser_file:
         return 1
     print(browser_file)
-    driver_file = getattr(core, f'{browser.capitalize()}DriverExecFileOrLink', None)
-    if not driver_file:
+    driver_file_type = getattr(core, f'{browser.capitalize()}DriverExecFileOrLink', None)
+    if not driver_file_type:
         return 1
-    driver_file = driver_file(getattr(settings, f'{browser.upper()}_DRIVER_FILE', browser).strip(),
-                              directory=getattr(settings, f'{browser.upper()}_DRIVER_DIR', '').strip())
+    driver_file = getattr(settings, f'{browser.upper()}_DRIVER_FILE', browser).strip()
+    driver_file = driver_file_type(driver_file if driver_file else browser,
+                                   directory=getattr(settings, f'{browser.upper()}_DRIVER_DIR', '').strip())
+    del driver_file_type
     if not driver_file:
         return 1
     print(driver_file)

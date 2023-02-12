@@ -1,5 +1,5 @@
 __author__ = 'norsulfazol'
-__version__ = '1.3.1'
+__version__ = '1.3.2'
 
 import os
 import sys
@@ -414,7 +414,8 @@ class ChromeDriverExecFileOrLink(DriverExecFileOrLink):
             logger.error('%sfailed.', self._upd_log_msg)
             return False
         try:
-            os.remove(os.path.join(self.directory, f'LICENSE.{self.name}'))
+            os.remove(os.path.join(self.directory, 'LICENSE.{}'.format(
+                self.name.rstrip('ex')[:-1] if self.name.endswith('.exe') else self.name)))
         finally:
             pass
         if self.perms('755') < '755':
